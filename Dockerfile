@@ -35,6 +35,23 @@ RUN set -eux; \
 ###> recipes ###
 ###< recipes ###
 
+###> SQLSRV INSTALL ###
+# Install system dependencies for SQL Server
+RUN apt-get update && apt-get install -y gnupg unixodbc-dev
+
+# Add Microsoft repository for SQL Server
+RUN curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - \
+    && curl https://packages.microsoft.com/config/debian/10/prod.list \
+    > /etc/apt/sources.list.d/mssql-release.list
+
+# Install SQL Server drivers and tools
+RUN apt-get update && ACCEPT_EULA=Y apt-get install -y msodbcsql17
+
+# Install SQLSRV && PDO_SQLSRV
+RUN install-php-extensions sqlsrv pdo_sqlsrv
+
+###< SQLSRV INSTALL ###
+
 COPY --link frankenphp/conf.d/app.ini $PHP_INI_DIR/conf.d/
 COPY --link --chmod=755 frankenphp/docker-entrypoint.sh /usr/local/bin/docker-entrypoint
 COPY --link frankenphp/Caddyfile /etc/caddy/Caddyfile
